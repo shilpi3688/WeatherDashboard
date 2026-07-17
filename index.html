@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="weatherApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkyCast | Weather Dashboard</title>
+
+  <!-- Google Fonts (typography only, no UI framework) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Project stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<!--
+  The <body> class is bound to the currently selected city's weather theme.
+  vm.selectedCity.theme holds one of: theme-sunny, theme-cloudy, theme-rainy,
+  theme-snowy, theme-night — each defined in style.css with its own gradient.
+-->
+<body ng-controller="WeatherController as vm" ng-class="vm.selectedCity.theme">
+
+  <!-- Decorative ambient blobs used purely for the background atmosphere -->
+  <div class="ambient-blob blob-a" aria-hidden="true"></div>
+  <div class="ambient-blob blob-b" aria-hidden="true"></div>
+
+  <div class="app-shell">
+
+    <!-- ============ HEADER ============ -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">🌤️</span>
+        <div class="brand-text">
+          <h1>SkyCast</h1>
+          <p>Your city, your sky, at a glance</p>
+        </div>
+      </div>
+
+      <!-- Search box with live suggestions restricted to predefined cities -->
+      <div class="search-wrap">
+        <div class="search-box">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="text"
+            placeholder="Search a city (e.g. Mumbai)"
+            ng-model="vm.searchText"
+            ng-keyup="$event.key === 'Enter' && vm.searchCity()"
+            aria-label="Search city">
+          <button class="search-btn" ng-click="vm.searchCity()">Search</button>
+        </div>
+
+        <!-- Suggestion dropdown: only shows cities matching the typed text -->
+        <ul class="suggestions" ng-show="vm.searchText && (vm.filteredCities = (vm.cities | filter:vm.searchText)).length">
+          <li ng-repeat="city in vm.filteredCities" ng-click="vm.selectCity(city)">
+            {{ city.name }}
+          </li>
+        </ul>
+
+        <!-- Message shown when the typed city isn't in our predefined list -->
+        <p class="no-match" ng-show="vm.notFound">
+          "{{ vm.lastQuery }}" isn't in our list. Try one of the 8 supported cities.
+        </p>
+      </div>
+
+      <!-- Current date, formatted with AngularJS's built-in date filter -->
+      <div class="current-date">
+        <span>{{ vm.today | date:'EEEE' }}</span>
+        <span>{{ vm.today | date:'d MMMM y' }}</span>
+      </div>
+    </header>
+
+    <!-- Quick-pick chips for the 8 predefined cities -->
+    <nav class="city-chips">
+      <button
+        class="chip"
+        ng-repeat="city in vm.cities"
+        ng-class="{active: city.name === vm.selectedCity.name}"
+        ng-click="vm.selectCity(city)">
+        {{ city.name }}
+      </button>
+    </nav>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="dashboard" ng-show="vm.selectedCity">
+
+      <!-- ===== Current Weather Card ===== -->
+      <section class="current-card">
+        <div class="current-main">
+          <div class="current-heading">
+            <h2>{{ vm.selectedCity.name }}</h2>
+            <p class="condition-label">{{ vm.selectedCity.condition }}</p>
+          </div>
+          <div class="current-icon" aria-hidden="true">{{ vm.selectedCity.icon }}</div>
+        </div>
+
+        <div class="current-temp">
+          <span class="temp-value">{{ vm.selectedCity.temp }}&deg;</span>
+          <span class="temp-unit">C</span>
+        </div>
+        <p class="feels-like">Feels like {{ vm.selectedCity.feelsLike }}&deg;C</p>
+
+        <!-- Secondary metrics grid -->
+        <div class="metrics-grid">
+          <div class="metric">
+            <span class="metric-icon">💧</span>
+            <span class="metric-value">{{ vm.selectedCity.humidity }}%</span>
+            <span class="metric-label">Humidity</span>
+          </div>
+          <div class="metric">
+            <span class="metric-icon">💨</span>
+            <span class="metric-value">{{ vm.selectedCity.wind }} km/h</span>
+            <span class="metric-label">Wind</span>
+          </div>
+          <div class="metric">
+            <span class="metric-icon">📊</span>
+            <span class="metric-value">{{ vm.selectedCity.pressure }} hPa</span>
+            <span class="metric-label">Pressure</span>
+          </div>
+          <div class="metric">
+            <span class="metric-icon">👁️</span>
+            <span class="metric-value">{{ vm.selectedCity.visibility }} km</span>
+            <span class="metric-label">Visibility</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Five-Day Forecast ===== -->
+      <section class="forecast-card">
+        <h3>5-Day Forecast</h3>
+        <div class="forecast-list">
+          <!-- ng-repeat renders one tile per forecast day from the JS data -->
+          <div class="forecast-tile" ng-repeat="day in vm.selectedCity.forecast">
+            <p class="forecast-day">{{ day.day }}</p>
+            <p class="forecast-icon" aria-hidden="true">{{ day.icon }}</p>
+            <p class="forecast-condition">{{ day.condition }}</p>
+            <p class="forecast-temps">
+              <span class="max">{{ day.max }}&deg;</span>
+              <span class="min">{{ day.min }}&deg;</span>
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="app-footer">
+      <p>Designed by <strong>Shilpi Kumari</strong></p>
+    </footer>
+  </div>
+
+  <!-- AngularJS 1.x from CDN (allowed: framework itself, not a UI/component library) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
